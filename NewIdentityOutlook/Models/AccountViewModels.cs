@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace TrialsAutumn2017.Models
+namespace NewIdentityOutlook.Models
 {
     public class ExternalLoginConfirmationViewModel
     {
@@ -43,10 +43,11 @@ namespace TrialsAutumn2017.Models
         public bool RememberMe { get; set; }
     }
 
-    public class RegisterCustomerViewModel
+    public class RegisterViewModel
     {
         [Required]
-        public string Email { get; set; }
+        [Display(Name = "User name")]
+        public string UserName { get; set; }
 
         [Required]
         [StringLength(100, ErrorMessage = "The {0} must be at least {2} characters long.", MinimumLength = 6)]
@@ -58,12 +59,5 @@ namespace TrialsAutumn2017.Models
         [Display(Name = "Confirm password")]
         [Compare("Password", ErrorMessage = "The password and confirmation password do not match.")]
         public string ConfirmPassword { get; set; }
-
-        [Required]
-        [Display(Name="First Name")]
-        public string FirstName { get; set; }
-
-        [Required, Display(Name="Last Name")]
-        public string LastName { get; set; }
     }
 }

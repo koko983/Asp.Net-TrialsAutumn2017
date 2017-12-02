@@ -8,25 +8,24 @@ using System.Web.Mvc;
 using Microsoft.AspNet.Identity;
 using Microsoft.AspNet.Identity.EntityFramework;
 using Microsoft.Owin.Security;
-using TrialsAutumn2017.Models;
+using NewIdentityOutlook.Models;
 
-namespace TrialsAutumn2017.Controllers
+namespace NewIdentityOutlook.Controllers
 {
     [Authorize]
     public class AccountController : Controller
     {
-        private SchoolDbContext db = new SchoolDbContext();
         public AccountController()
+            : this(new UserManager<ApplicationUser>(new UserStore<ApplicationUser>(new ApplicationDbContext())))
         {
-            UserManager = new UserManager<Customer>(new UserStore<Customer>(db));
         }
 
-        public AccountController(UserManager<Customer> userManager)
+        public AccountController(UserManager<ApplicationUser> userManager)
         {
             UserManager = userManager;
         }
 
-        public UserManager<Customer> UserManager { get; private set; }
+        public UserManager<ApplicationUser> UserManager { get; private set; }
 
         //
         // GET: /Account/Login
@@ -75,38 +74,21 @@ namespace TrialsAutumn2017.Controllers
         [HttpPost]
         [AllowAnonymous]
         [ValidateAntiForgeryToken]
-        public async Task<ActionResult> Register(RegisterCustomerViewModel model)
+        public async Task<ActionResult> Register(RegisterViewModel model)
         {
-            var roleStore = new RoleStore<IdentityRole>(db);
-            var roleManager = new RoleManager<IdentityRole>(roleStore);
             if (ModelState.IsValid)
             {
-                var customer = new Customer()
-                {
-                    Email = model.Email,
-                    UserName = "FuckingUserName",
-                    FirstName = model.FirstName,
-                    LastName = model.LastName,
-                };
-                IdentityResult result;
-                result = await UserManager.CreateAsync(customer, model.Password);
-                
+                var user = new ApplicationUser() { UserName = model.UserName };
+                var result = await UserManager.CreateAsync(user, model.Password);
                 if (result.Succeeded)
                 {
-                    if (roleManager.FindByName("Admin") == null)
-                        result = roleManager.Create(new IdentityRole { Name = "Admin" });
-                    if (result.Succeeded)
-                    {
-                        result = UserManager.AddToRole(customer.Id, "Admin");
-                        if (result.Succeeded)
-                        {
-                            await SignInAsync(customer, isPersistent: false);
-                            return RedirectToAction("Index", "Home");
-                        }
-                    }
+                    await SignInAsync(user, isPersistent: false);
+                    return RedirectToAction("Index", "Home");
                 }
-                
-                AddErrors(result);
+                else
+                {
+                    AddErrors(result);
+                }
             }
 
             // If we got this far, something failed, redisplay form
@@ -283,7 +265,7 @@ namespace TrialsAutumn2017.Controllers
                 {
                     return View("ExternalLoginFailure");
                 }
-                var user = new Customer() { UserName = model.UserName };
+                var user = new ApplicationUser() { UserName = model.UserName };
                 var result = await UserManager.CreateAsync(user);
                 if (result.Succeeded)
                 {
@@ -349,7 +331,7 @@ namespace TrialsAutumn2017.Controllers
             }
         }
 
-        private async Task SignInAsync(Customer user, bool isPersistent)
+        private async Task SignInAsync(ApplicationUser user, bool isPersistent)
         {
             AuthenticationManager.SignOut(DefaultAuthenticationTypes.ExternalCookie);
             var identity = await UserManager.CreateIdentityAsync(user, DefaultAuthenticationTypes.ApplicationCookie);
@@ -396,8 +378,7 @@ namespace TrialsAutumn2017.Controllers
 
         private class ChallengeResult : HttpUnauthorizedResult
         {
-            public ChallengeResult(string provider, string redirectUri)
-                : this(provider, redirectUri, null)
+            public ChallengeResult(string provider, string redirectUri) : this(provider, redirectUri, null)
             {
             }
 

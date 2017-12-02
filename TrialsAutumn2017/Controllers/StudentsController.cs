@@ -7,7 +7,7 @@ using System.Net;
 using System.Web;
 using System.Web.Mvc;
 using Core;
-using TrialsAutumn2017.DAL;
+using TrialsAutumn2017.Models;
 
 namespace TrialsAutumn2017.Controllers
 {
